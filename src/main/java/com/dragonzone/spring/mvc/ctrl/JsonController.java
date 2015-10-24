@@ -52,7 +52,7 @@ public class JsonController {
 			DatabaseMetaData meta = conn.getMetaData();
 
 			List<String> tableNameList = new ArrayList<>();
-			ResultSet rs = meta.getTables(conn.getCatalog(), schema, null, null);
+			final ResultSet tableResultSet = meta.getTables(conn.getCatalog(), schema, null, null);
 			/*
 			 * ResultSetMetaData rsmd = rs.getMetaData(); for (int i = 1; i <=
 			 * rsmd.getColumnCount(); i++) { String colName =
@@ -60,10 +60,10 @@ public class JsonController {
 			 */
 			Map<String, Node> tableMap = new HashMap<>();
 			LOGGER.debug("List of tables: ");
-			while (rs.next()) {
-				String tableName = rs.getString("TABLE_NAME");
-				LOGGER.debug("TABLE_CAT: " + rs.getString("TABLE_CAT") + ", " + "TABLE_SCHEM: " + rs.getString("TABLE_SCHEM") + ", " + "TABLE_NAME: "
-						+ tableName + ", " + "TABLE_TYPE: " + rs.getString("TABLE_TYPE") + ", " + "REMARKS: " + rs.getString("REMARKS"));
+			while (tableResultSet.next()) {
+				String tableName = tableResultSet.getString("TABLE_NAME");
+				LOGGER.debug("TABLE_CAT: " + tableResultSet.getString("TABLE_CAT") + ", " + "TABLE_SCHEM: " + tableResultSet.getString("TABLE_SCHEM") + ", " + "TABLE_NAME: "
+						+ tableName + ", " + "TABLE_TYPE: " + tableResultSet.getString("TABLE_TYPE") + ", " + "REMARKS: " + tableResultSet.getString("REMARKS"));
 
 				Node node = new Node();
 				final String name = schema + "." + tableName;
@@ -73,34 +73,34 @@ public class JsonController {
 
 				tableNameList.add(tableName);
 			}
-			rs.close();
+			tableResultSet.close();
 
 			for (String tableName : tableNameList) {
-				Node node = tableMap.get(tableName);
+				final Node node = tableMap.get(tableName);
 				StringBuilder sbTitle = new StringBuilder("<table border=1><tr><th colspan=4>");
 				sbTitle.append(tableName);
 				sbTitle.append("</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr>");
 
 				LOGGER.debug("List of " + tableName + " columns: ");
-				rs = meta.getColumns(conn.getCatalog(), schema, tableName, null);
-				while (rs.next()) {
-					LOGGER.debug("TABLE_CAT: " + rs.getString("TABLE_CAT") + ", " + "TABLE_SCHEM: " + rs.getString("TABLE_SCHEM") + ", " + "TABLE_NAME: "
-							+ rs.getString("TABLE_NAME") + ", " + "COLUMN_NAME: " + rs.getString("COLUMN_NAME") + ", " + "DATA_TYPE: "
-							+ rs.getString("DATA_TYPE") + ", " + "TYPE_NAME: " + rs.getString("TYPE_NAME") + ", " + "COLUMN_SIZE: "
-							+ rs.getString("COLUMN_SIZE") + ", " + "IS_NULLABLE: " + rs.getString("IS_NULLABLE") + ", " + "REMARKS: "
-							+ rs.getString("REMARKS"));
+				final ResultSet columnResultSet = meta.getColumns(conn.getCatalog(), schema, tableName, null);
+				while (columnResultSet.next()) {
+					LOGGER.debug("TABLE_CAT: " + columnResultSet.getString("TABLE_CAT") + ", " + "TABLE_SCHEM: " + columnResultSet.getString("TABLE_SCHEM") + ", " + "TABLE_NAME: "
+							+ columnResultSet.getString("TABLE_NAME") + ", " + "COLUMN_NAME: " + columnResultSet.getString("COLUMN_NAME") + ", " + "DATA_TYPE: "
+							+ columnResultSet.getString("DATA_TYPE") + ", " + "TYPE_NAME: " + columnResultSet.getString("TYPE_NAME") + ", " + "COLUMN_SIZE: "
+							+ columnResultSet.getString("COLUMN_SIZE") + ", " + "IS_NULLABLE: " + columnResultSet.getString("IS_NULLABLE") + ", " + "REMARKS: "
+							+ columnResultSet.getString("REMARKS"));
 
 					sbTitle.append("<tr><td>");
-					sbTitle.append(rs.getString("COLUMN_NAME"));
+					sbTitle.append(columnResultSet.getString("COLUMN_NAME"));
 					sbTitle.append("</td><td>");
-					sbTitle.append(rs.getString("TYPE_NAME"));
+					sbTitle.append(columnResultSet.getString("TYPE_NAME"));
 					sbTitle.append("</td><td>");
-					sbTitle.append(rs.getString("COLUMN_SIZE"));
+					sbTitle.append(columnResultSet.getString("COLUMN_SIZE"));
 					sbTitle.append("</td><td>");
-					sbTitle.append(rs.getString("IS_NULLABLE"));
+					sbTitle.append(columnResultSet.getString("IS_NULLABLE"));
 					sbTitle.append("</td></tr>");
 				}
-				rs.close();
+				columnResultSet.close();
 				
 				sbTitle.append("</table>");
 
@@ -110,29 +110,29 @@ public class JsonController {
 
 			LOGGER.debug("List of tables foreign keys: ");
 			for (String tableName : tableNameList) {
-				rs = meta.getImportedKeys(conn.getCatalog(), schema, tableName);
-				while (rs.next()) {
-					LOGGER.debug("PKTABLE_CAT: " + rs.getString("PKTABLE_CAT") + ", " + "PKTABLE_SCHEM: " + rs.getString("PKTABLE_SCHEM") + ", "
-							+ "PKTABLE_NAME: " + rs.getString("PKTABLE_NAME") + ", " + "PKCOLUMN_NAME: " + rs.getString("PKCOLUMN_NAME") + ", "
-							+ "FKTABLE_CAT: " + rs.getString("FKTABLE_CAT") + ", " + "FKTABLE_SCHEM: " + rs.getString("FKTABLE_SCHEM") + ", " + "FKTABLE_NAME: "
-							+ rs.getString("FKTABLE_NAME") + ", " + "FKCOLUMN_NAME: " + rs.getString("FKCOLUMN_NAME") + ", " + "KEY_SEQ: "
-							+ rs.getString("KEY_SEQ") + ", " + "UPDATE_RULE: " + rs.getString("UPDATE_RULE") + ", " + "DELETE_RULE: "
-							+ rs.getString("DELETE_RULE") + ", " + "FK_NAME: " + rs.getString("FK_NAME") + ", " + "PK_NAME: " + rs.getString("PK_NAME") + ", "
-							+ "DEFERRABILITY: " + rs.getString("DEFERRABILITY"));
+				final ResultSet foreignKeyResultSet = meta.getImportedKeys(conn.getCatalog(), schema, tableName);
+				while (foreignKeyResultSet.next()) {
+					LOGGER.debug("PKTABLE_CAT: " + foreignKeyResultSet.getString("PKTABLE_CAT") + ", " + "PKTABLE_SCHEM: " + foreignKeyResultSet.getString("PKTABLE_SCHEM") + ", "
+							+ "PKTABLE_NAME: " + foreignKeyResultSet.getString("PKTABLE_NAME") + ", " + "PKCOLUMN_NAME: " + foreignKeyResultSet.getString("PKCOLUMN_NAME") + ", "
+							+ "FKTABLE_CAT: " + foreignKeyResultSet.getString("FKTABLE_CAT") + ", " + "FKTABLE_SCHEM: " + foreignKeyResultSet.getString("FKTABLE_SCHEM") + ", " + "FKTABLE_NAME: "
+							+ foreignKeyResultSet.getString("FKTABLE_NAME") + ", " + "FKCOLUMN_NAME: " + foreignKeyResultSet.getString("FKCOLUMN_NAME") + ", " + "KEY_SEQ: "
+							+ foreignKeyResultSet.getString("KEY_SEQ") + ", " + "UPDATE_RULE: " + foreignKeyResultSet.getString("UPDATE_RULE") + ", " + "DELETE_RULE: "
+							+ foreignKeyResultSet.getString("DELETE_RULE") + ", " + "FK_NAME: " + foreignKeyResultSet.getString("FK_NAME") + ", " + "PK_NAME: " + foreignKeyResultSet.getString("PK_NAME") + ", "
+							+ "DEFERRABILITY: " + foreignKeyResultSet.getString("DEFERRABILITY"));
 
 					Edge edge = new Edge();
-					final String name = rs.getString("FK_NAME");
-					edge.setId(rs.getString("FKTABLE_NAME") + "." + rs.getString("FKCOLUMN_NAME") + "-" + rs.getString("PKTABLE_NAME") + "."
-							+ rs.getString("PKCOLUMN_NAME"));
+					final String name = foreignKeyResultSet.getString("FK_NAME");
+					edge.setId(foreignKeyResultSet.getString("FKTABLE_NAME") + "." + foreignKeyResultSet.getString("FKCOLUMN_NAME") + "-" + foreignKeyResultSet.getString("PKTABLE_NAME") + "."
+							+ foreignKeyResultSet.getString("PKCOLUMN_NAME"));
 					edge.setLabel(name);
-					edge.setTitle(rs.getString("FKTABLE_NAME") + "." + rs.getString("FKCOLUMN_NAME") + " references " + rs.getString("PKTABLE_NAME") + "."
-							+ rs.getString("PKCOLUMN_NAME"));
-					edge.setFrom(schema + "." + rs.getString("FKTABLE_NAME"));
-					edge.setTo(schema + "." + rs.getString("PKTABLE_NAME"));
+					edge.setTitle(foreignKeyResultSet.getString("FKTABLE_NAME") + "." + foreignKeyResultSet.getString("FKCOLUMN_NAME") + " references " + foreignKeyResultSet.getString("PKTABLE_NAME") + "."
+							+ foreignKeyResultSet.getString("PKCOLUMN_NAME"));
+					edge.setFrom(schema + "." + foreignKeyResultSet.getString("FKTABLE_NAME"));
+					edge.setTo(schema + "." + foreignKeyResultSet.getString("PKTABLE_NAME"));
 					edgeList.add(edge);
 				}
 
-				rs.close();
+				foreignKeyResultSet.close();
 			}
 
 			network.setNodes(new ArrayList<Node>(tableMap.values()));

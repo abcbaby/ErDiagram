@@ -4,7 +4,8 @@
 <title>ER Diagram</title>
 
 <link href="/js/vis/vis.css" rel="stylesheet" type="text/css" />
-<link href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet"
+	type="text/css" />
 </head>
 
 <body>
@@ -13,27 +14,36 @@
 			<div class="row">
 				<div class="col-sm-5">
 					<div class="form-group">
-						<label for="url">URL:</label> <input type="text" class="form-control" id="url" value="jdbc:oracle:thin:@[hostname]:[port]:[sid]">
+						<label for="url">URL:</label> <input type="text"
+							class="form-control" id="url"
+							value="jdbc:oracle:thin:@[hostname]:[port]:[sid]">
 					</div>
 					<div class="form-group">
-						<label for="username">Username:</label> <input type="text" class="form-control" id="username">
+						<label for="username">Username:</label> <input type="text"
+							class="form-control" id="username">
 					</div>
 					<div class="form-group">
-						<label for="password">Password:</label> <input type="password" class="form-control" id="password">
+						<label for="password">Password:</label> <input type="password"
+							class="form-control" id="password">
 					</div>
 					<div class="form-group">
-						<label for="schema">Schema:</label> <input type="text" class="form-control" id="schema" value="dragon">
+						<label for="schema">Schema:</label> <input type="text"
+							class="form-control" id="schema" value="dragon">
 					</div>
 					<div class="form-group">
-						<label for="schema">Force Refresh:</label> <label class="radio-inline"><input type="radio" name="forceRefresh" value="true">True</label> <label
-							class="radio-inline"><input type="radio" name="forceRefresh" value="false" checked>False</label>
+						<label for="schema">Force Refresh:</label> <label
+							class="radio-inline"><input type="radio"
+							name="forceRefresh" value="true">True</label> <label
+							class="radio-inline"><input type="radio"
+							name="forceRefresh" value="false" checked>False</label>
 					</div>
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-sm-5">
 					<div class="form-group">
-						<button type="button" class="btn btn-primary generateDiagram">Generate Diagram</button>
+						<button type="button" class="btn btn-primary generateDiagram">Generate
+							Diagram</button>
 					</div>
 				</div>
 			</div>
@@ -70,6 +80,7 @@
 						};
 
 						var that = this;
+						var jsonData;
 						$.ajax({
 							async : false,
 							type : "POST",
@@ -79,21 +90,21 @@
 							data : JSON.stringify(postData),
 							beforeSend : function() {
 							},
-							error : function() {
-								alert("Error trying to retrieve data.");
+							error : function(e) {
+								alert("Error trying to retrieve data. " + e);
 							},
-							success : function(jsonData) {
-								network = jsonData;
+							success : function(json) {
+								jsonData = json;
 							},
-							complete : function(jsonData) {
+							complete : function() {
 								that.$el.hide();
 							},
 						});
 
-						if (network) {
+						if (jsonData) {
 							// create an array with nodes
-							var nodes = network.nodes;
-							var edges = network.edges;
+							nodes = jsonData.nodes;
+							edges = jsonData.edges;
 
 							// create a network
 							var container = document
@@ -129,17 +140,25 @@
 									smooth : {
 										type : 'continuous'
 									},
-									length: 400
+									length : 400
 								}
 							};
-							var network = new vis.Network(container, data,
-									options);
+							network = new vis.Network(container, data, options);
 						}
 					}
 				});
 
+		var network, nodes, edges;
+
 		$(document).ready(function() {
 			var dsInputView = new DsInputView();
+
+			// TODO: add delete feature
+			$(document).keyup(function(e) {
+				if (e.keyCode == 46) { // delete button pressed
+					//removeSelectedNodes();
+				}
+			})
 		});
 	</script>
 </body>
