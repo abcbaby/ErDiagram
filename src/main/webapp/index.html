@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<title>ER Diagram</title>
+
+<link href="/js/vis/vis.css" rel="stylesheet" type="text/css" />
+<link href="/js/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+	<div class="container">
+		<form id="dsInfoId" role="form">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="form-group">
+						<label for="url">URL:</label> <input type="text" class="form-control" id="url" value="jdbc:oracle:thin:@[hostname]:[port]:[sid]">
+					</div>
+					<div class="form-group">
+						<label for="username">Username:</label> <input type="text" class="form-control" id="username">
+					</div>
+					<div class="form-group">
+						<label for="password">Password:</label> <input type="password" class="form-control" id="password">
+					</div>
+					<div class="form-group">
+						<label for="schema">Schema:</label> <input type="text" class="form-control" id="schema">
+					</div>
+					<div class="form-group">
+						<label for="schema">Force Refresh:</label> <label class="radio-inline"><input type="radio" name="forceRefresh" value="true">True</label> <label
+							class="radio-inline"><input type="radio" name="forceRefresh" value="false" checked>False</label>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="form-group">
+						<button type="button" class="btn btn-primary generateDiagram">Generate Diagram</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<hr />
+
+	<div id="mynetwork"></div>
+
+	<script type="text/javascript" src="/js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/js/lodash/lodash.js"></script>
+	<script type="text/javascript" src="/js/backbone/backbone-min.js"></script>
+	<script type="text/javascript" src="/js/bootbox/bootbox.min.js"></script>
+	<script type="text/javascript" src="/js/vis/vis.js"></script>
+
+	<script type="text/javascript">
+		var DsInputView = Backbone.View
+				.extend({
+					el : $("#dsInfoId"),
+					events : {
+						'click .generateDiagram' : 'generateDiagram'
+					},
+					generateDiagram : function() {
+						var postData = {
+							"url" : $("#url").val(),
+							"username" : $("#username").val(),
+							"password" : $("#password").val(),
+							"schema" : $("#schema").val(),
+							"forceRefresh" : $(
+									"input:radio[name=forceRefresh]:checked")
+									.val()
+						};
+						console.log(JSON.stringify(postData));
+
+						$.ajax({
+							async : false,
+							type : "POST",
+							url : "/rest/erDiagram",
+							contentType : "application/json; charset=utf-8",
+							dataType : "json",
+							data : JSON.stringify(postData),
+							beforeSend : function() {
+							},
+							error : function() {
+								alert("Error trying to retrieve data.");
+							},
+							success : function(jsonData) {
+								network = jsonData;
+							},
+							complete : function(jsonData) {
+							},
+						});
+
+						if (network) {
+							// create an array with nodes
+							var nodes = network.nodes;
+							var edges = network.edges;
+
+							// create a network
+							var container = document
+									.getElementById('mynetwork');
+							var data = {
+								nodes : nodes,
+								edges : edges
+							};
+							var options = {
+								configure : true,
+								width : window.innerWidth,
+								height : window.innerHeight,
+								layout : {
+									randomSeed : 8
+								},
+								interaction : {
+									multiselect : true,
+									navigationButtons : true
+								},
+								nodes : {
+									borderWidthSelected : 2,
+									shape : 'box'
+								},
+								edges : {
+									arrows : {
+										to : {
+											scaleFactor : 0.5
+										}
+									},
+									font : {
+										align : "middle"
+									},
+									smooth : {
+										type : 'continuous'
+									},
+									length: 400
+								}
+							};
+							var network = new vis.Network(container, data,
+									options);
+						}
+					}
+				});
+
+		$(document).ready(function() {
+			var dsInputView = new DsInputView();
+		});
+	</script>
+</body>
+</html>

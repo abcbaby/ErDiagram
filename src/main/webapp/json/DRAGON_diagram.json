@@ -1,0 +1,31 @@
+{
+  "nodes" : [ {
+    "id" : "DRAGON.ROLES",
+    "label" : "ROLES",
+    "title" : "<table border=1><tr><th colspan=4>ROLES</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>ROLE_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>ROLE</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>DESCRIPTION</td><td>VARCHAR2</td><td>150</td><td>YES</td></tr></table>",
+    "propertyMap" : null
+  }, {
+    "id" : "DRAGON.USERS",
+    "label" : "USERS",
+    "title" : "<table border=1><tr><th colspan=4>USERS</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>USER_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>USERNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>FIRSTNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>LASTNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>MIDDLENAME</td><td>CHAR</td><td>1</td><td>YES</td></tr><tr><td>EMAIL</td><td>VARCHAR2</td><td>150</td><td>YES</td></tr></table>",
+    "propertyMap" : null
+  }, {
+    "id" : "DRAGON.USER_ROLES",
+    "label" : "USER_ROLES",
+    "title" : "<table border=1><tr><th colspan=4>USER_ROLES</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>USER_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>ROLE_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr></table>",
+    "propertyMap" : null
+  } ],
+  "edges" : [ {
+    "id" : "USER_ROLES.ROLE_ID-ROLES.ROLE_ID",
+    "from" : "DRAGON.USER_ROLES",
+    "to" : "DRAGON.ROLES",
+    "label" : "FK_USER_ROLES2",
+    "title" : "USER_ROLES.ROLE_ID references ROLES.ROLE_ID"
+  }, {
+    "id" : "USER_ROLES.USER_ID-USERS.USER_ID",
+    "from" : "DRAGON.USER_ROLES",
+    "to" : "DRAGON.USERS",
+    "label" : "FK_USER_ROLES1",
+    "title" : "USER_ROLES.USER_ID references USERS.USER_ID"
+  } ]
+}
