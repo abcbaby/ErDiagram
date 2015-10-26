@@ -37,9 +37,9 @@ public class JsonController {
 	public @ResponseBody Network generateErDiagram(final HttpServletRequest req, 
 			@RequestBody final DataSourceInfo dsInfo) throws Exception {
 		LOGGER.debug("In generateErDiagram");
-		String schema = dsInfo.getSchema().toUpperCase(); // Oracle schema are always capitalized!
-		String jsonDir = req.getServletContext().getRealPath("/json");
-		File jsonFile = new File(jsonDir, schema + "_diagram.json");
+		final String schema = dsInfo.getSchema().toUpperCase(); // Oracle schema are always capitalized!
+		final String jsonDir = req.getServletContext().getRealPath("/json");
+		final File jsonFile = new File(jsonDir, schema + "_diagram.json");
 
 		Network network;
 		if (!dsInfo.isForceRefresh() && jsonFile.exists()) { // if file exists use it
@@ -48,8 +48,8 @@ public class JsonController {
 			LOGGER.info("Started at {}", new Date());
 			network = new Network();
 
-			Connection conn = getOracleConnection(dsInfo.getUrl(), dsInfo.getUsername(), dsInfo.getPassword());
-			DatabaseMetaData meta = conn.getMetaData();
+			final Connection conn = getOracleConnection(dsInfo.getUrl(), dsInfo.getUsername(), dsInfo.getPassword());
+			final DatabaseMetaData meta = conn.getMetaData();
 
 			List<String> tableNameList = new ArrayList<>();
 			final ResultSet tableResultSet = meta.getTables(conn.getCatalog(), schema, null, null);
@@ -61,7 +61,7 @@ public class JsonController {
 			Map<String, Node> tableMap = new HashMap<>();
 			LOGGER.debug("List of tables: ");
 			while (tableResultSet.next()) {
-				String tableName = tableResultSet.getString("TABLE_NAME");
+				final String tableName = tableResultSet.getString("TABLE_NAME");
 				LOGGER.debug("TABLE_CAT: " + tableResultSet.getString("TABLE_CAT") + ", " + "TABLE_SCHEM: " + tableResultSet.getString("TABLE_SCHEM") + ", " + "TABLE_NAME: "
 						+ tableName + ", " + "TABLE_TYPE: " + tableResultSet.getString("TABLE_TYPE") + ", " + "REMARKS: " + tableResultSet.getString("REMARKS"));
 
@@ -138,6 +138,7 @@ public class JsonController {
 			network.setNodes(new ArrayList<Node>(tableMap.values()));
 			network.setEdges(edgeList);
 
+			// write to file to be reused later instead of regenerating every time.
 			FileUtils.writeStringToFile(jsonFile, new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(network));
 
 			conn.close();
