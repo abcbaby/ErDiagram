@@ -80,7 +80,6 @@
 									.val()
 						};
 
-						var that = this;
 						var jsonData;
 						$.ajax({
 							async : false,
@@ -92,62 +91,67 @@
 							beforeSend : function() {
 							},
 							error : function(e) {
-								alert("Error trying to retrieve data. " + e);
+								$.notify({
+									message: "Error trying to retrieve data."
+								},{
+									type: 'danger'
+								});
 							},
 							success : function(json) {
 								jsonData = json;
 							},
-							complete : function() {
-								that.$el.hide();
-							},
 						});
 
 						if (jsonData) {
-							// create an array with nodes
-							nodes = new vis.DataSet(jsonData.nodes);
-							edges = new vis.DataSet(jsonData.edges);
-
-							var data = {
-								nodes : nodes,
-								edges : edges
-							};
-							var options = {
-								configure : true,
-								width : window.innerWidth,
-								height : window.innerHeight,
-								layout : {
-									randomSeed : 8
-								},
-								interaction : {
-									multiselect : true,
-									navigationButtons : true
-								},
-								nodes : {
-									borderWidthSelected : 2,
-									shape : 'box'
-								},
-								edges : {
-									arrows : {
-										to : {
-											scaleFactor : 0.5
-										}
-									},
-									font : {
-										align : "middle"
-									},
-									smooth : {
-										type : 'continuous'
-									},
-									length : 400
-								}
-							};
-							network = new vis.Network(container[0], data, options);
-							
-							canvas = network.canvas.frame.canvas;
-							ctx = canvas.getContext('2d');
+							draw(jsonData);
+							this.$el.hide();
 						}
 					}
 				});
+		
+		function draw(jsonData) {
+			nodes = new vis.DataSet(jsonData.nodes);
+			edges = new vis.DataSet(jsonData.edges);
+
+			var data = {
+				nodes : nodes,
+				edges : edges
+			};
+			var options = {
+				configure : true,
+				width : window.innerWidth + "px",
+				height : window.innerHeight + "px",
+				layout : {
+					randomSeed : 8
+				},
+				interaction : {
+					multiselect : true,
+					navigationButtons : true
+				},
+				nodes : {
+					borderWidthSelected : 2,
+					shape : 'box'
+				},
+				edges : {
+					arrows : {
+						to : {
+							scaleFactor : 0.5
+						}
+					},
+					font : {
+						align : "middle"
+					},
+					smooth : {
+						type : 'continuous'
+					},
+					length : 400
+				}
+			};
+			network = new vis.Network(container[0], data, options);
+			
+			canvas = network.canvas.frame.canvas;
+			ctx = canvas.getContext('2d');			
+		}
 		
 		function removeSelectedNodes() {
 			var selectedNodeIds = network.getSelectedNodes();
