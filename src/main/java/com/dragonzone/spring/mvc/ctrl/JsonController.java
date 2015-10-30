@@ -54,6 +54,7 @@ public class JsonController {
 			List<String> tableNameList = new ArrayList<>();
 			final ResultSet tableResultSet = meta.getTables(conn.getCatalog(), schema, null, null);
 			/*
+			 * Leave this here to troubleshoot if later need help to pull all the names from resultSet
 			 * ResultSetMetaData rsmd = rs.getMetaData(); for (int i = 1; i <=
 			 * rsmd.getColumnCount(); i++) { String colName =
 			 * rsmd.getColumnName(i); LOGGER.debug("Column Name: " + colName); }
@@ -75,12 +76,53 @@ public class JsonController {
 			}
 			tableResultSet.close();
 
+			List<Edge> edgeList = new ArrayList<>();
+
+			LOGGER.debug("List of tables foreign keys: ");
+			for (String tableName : tableNameList) {
+				final List<String> foreignKeyList = new ArrayList<>();
+				final ResultSet foreignKeyResultSet = meta.getImportedKeys(conn.getCatalog(), schema, tableName);
+				while (foreignKeyResultSet.next()) {
+					LOGGER.debug("PKTABLE_CAT: " + foreignKeyResultSet.getString("PKTABLE_CAT") + ", " + "PKTABLE_SCHEM: " + foreignKeyResultSet.getString("PKTABLE_SCHEM") + ", "
+							+ "PKTABLE_NAME: " + foreignKeyResultSet.getString("PKTABLE_NAME") + ", " + "PKCOLUMN_NAME: " + foreignKeyResultSet.getString("PKCOLUMN_NAME") + ", "
+							+ "FKTABLE_CAT: " + foreignKeyResultSet.getString("FKTABLE_CAT") + ", " + "FKTABLE_SCHEM: " + foreignKeyResultSet.getString("FKTABLE_SCHEM") + ", " + "FKTABLE_NAME: "
+							+ foreignKeyResultSet.getString("FKTABLE_NAME") + ", " + "FKCOLUMN_NAME: " + foreignKeyResultSet.getString("FKCOLUMN_NAME") + ", " + "KEY_SEQ: "
+							+ foreignKeyResultSet.getString("KEY_SEQ") + ", " + "UPDATE_RULE: " + foreignKeyResultSet.getString("UPDATE_RULE") + ", " + "DELETE_RULE: "
+							+ foreignKeyResultSet.getString("DELETE_RULE") + ", " + "FK_NAME: " + foreignKeyResultSet.getString("FK_NAME") + ", " + "PK_NAME: " + foreignKeyResultSet.getString("PK_NAME") + ", "
+							+ "DEFERRABILITY: " + foreignKeyResultSet.getString("DEFERRABILITY"));
+
+					final Edge edge = new Edge();
+					final String fkName = foreignKeyResultSet.getString("FK_NAME");
+					final String fkColumnName = foreignKeyResultSet.getString("FKCOLUMN_NAME");
+					foreignKeyList.add(fkColumnName);
+					edge.setId(foreignKeyResultSet.getString("FKTABLE_NAME") + "." + fkColumnName + "-" + foreignKeyResultSet.getString("PKTABLE_NAME") + "."
+							+ foreignKeyResultSet.getString("PKCOLUMN_NAME"));
+					edge.setLabel(fkName);
+					edge.setTitle(foreignKeyResultSet.getString("FKTABLE_NAME") + "." + fkColumnName + " references " + foreignKeyResultSet.getString("PKTABLE_NAME") + "."
+							+ foreignKeyResultSet.getString("PKCOLUMN_NAME"));
+					edge.setFrom(schema + "." + foreignKeyResultSet.getString("FKTABLE_NAME"));
+					edge.setTo(schema + "." + foreignKeyResultSet.getString("PKTABLE_NAME"));
+					edgeList.add(edge);
+				}
+				foreignKeyResultSet.close();
+				
+				final Node node = tableMap.get(tableName);
+				node.setForeignKeyList(foreignKeyList);
+			}
+
 			for (String tableName : tableNameList) {
 				final Node node = tableMap.get(tableName);
-				StringBuilder sbTitle = new StringBuilder("<table border=1><tr><th colspan=4>");
+				final StringBuilder sbTitle = new StringBuilder("<table border=1><tr><th colspan=4>");
 				sbTitle.append(tableName);
 				sbTitle.append("</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr>");
 
+				final List<String> primaryKeyList = new ArrayList<>();
+				final ResultSet primaryKeyResultSet = meta.getPrimaryKeys(conn.getCatalog(), schema, tableName);
+				while (primaryKeyResultSet.next()) {
+					primaryKeyList.add(primaryKeyResultSet.getString("COLUMN_NAME"));
+				}
+				node.setPrimaryKeyList(primaryKeyList);
+				
 				LOGGER.debug("List of " + tableName + " columns: ");
 				final ResultSet columnResultSet = meta.getColumns(conn.getCatalog(), schema, tableName, null);
 				while (columnResultSet.next()) {
@@ -91,7 +133,13 @@ public class JsonController {
 							+ columnResultSet.getString("REMARKS"));
 
 					sbTitle.append("<tr><td>");
-					sbTitle.append(columnResultSet.getString("COLUMN_NAME"));
+					final String columnName = columnResultSet.getString("COLUMN_NAME");
+					sbTitle.append(columnName);
+					if (existsInList(node.getPrimaryKeyList(), columnName)) {
+						sbTitle.append(" (PK)");
+					} else if (existsInList(node.getForeignKeyList(), columnName)) {
+						sbTitle.append(" (FK)");
+					}
 					sbTitle.append("</td><td>");
 					sbTitle.append(columnResultSet.getString("TYPE_NAME"));
 					sbTitle.append("</td><td>");
@@ -106,35 +154,7 @@ public class JsonController {
 
 				node.setTitle(sbTitle.toString());
 			}
-			List<Edge> edgeList = new ArrayList<>();
-
-			LOGGER.debug("List of tables foreign keys: ");
-			for (String tableName : tableNameList) {
-				final ResultSet foreignKeyResultSet = meta.getImportedKeys(conn.getCatalog(), schema, tableName);
-				while (foreignKeyResultSet.next()) {
-					LOGGER.debug("PKTABLE_CAT: " + foreignKeyResultSet.getString("PKTABLE_CAT") + ", " + "PKTABLE_SCHEM: " + foreignKeyResultSet.getString("PKTABLE_SCHEM") + ", "
-							+ "PKTABLE_NAME: " + foreignKeyResultSet.getString("PKTABLE_NAME") + ", " + "PKCOLUMN_NAME: " + foreignKeyResultSet.getString("PKCOLUMN_NAME") + ", "
-							+ "FKTABLE_CAT: " + foreignKeyResultSet.getString("FKTABLE_CAT") + ", " + "FKTABLE_SCHEM: " + foreignKeyResultSet.getString("FKTABLE_SCHEM") + ", " + "FKTABLE_NAME: "
-							+ foreignKeyResultSet.getString("FKTABLE_NAME") + ", " + "FKCOLUMN_NAME: " + foreignKeyResultSet.getString("FKCOLUMN_NAME") + ", " + "KEY_SEQ: "
-							+ foreignKeyResultSet.getString("KEY_SEQ") + ", " + "UPDATE_RULE: " + foreignKeyResultSet.getString("UPDATE_RULE") + ", " + "DELETE_RULE: "
-							+ foreignKeyResultSet.getString("DELETE_RULE") + ", " + "FK_NAME: " + foreignKeyResultSet.getString("FK_NAME") + ", " + "PK_NAME: " + foreignKeyResultSet.getString("PK_NAME") + ", "
-							+ "DEFERRABILITY: " + foreignKeyResultSet.getString("DEFERRABILITY"));
-
-					Edge edge = new Edge();
-					final String name = foreignKeyResultSet.getString("FK_NAME");
-					edge.setId(foreignKeyResultSet.getString("FKTABLE_NAME") + "." + foreignKeyResultSet.getString("FKCOLUMN_NAME") + "-" + foreignKeyResultSet.getString("PKTABLE_NAME") + "."
-							+ foreignKeyResultSet.getString("PKCOLUMN_NAME"));
-					edge.setLabel(name);
-					edge.setTitle(foreignKeyResultSet.getString("FKTABLE_NAME") + "." + foreignKeyResultSet.getString("FKCOLUMN_NAME") + " references " + foreignKeyResultSet.getString("PKTABLE_NAME") + "."
-							+ foreignKeyResultSet.getString("PKCOLUMN_NAME"));
-					edge.setFrom(schema + "." + foreignKeyResultSet.getString("FKTABLE_NAME"));
-					edge.setTo(schema + "." + foreignKeyResultSet.getString("PKTABLE_NAME"));
-					edgeList.add(edge);
-				}
-
-				foreignKeyResultSet.close();
-			}
-
+						
 			network.setNodes(new ArrayList<Node>(tableMap.values()));
 			network.setEdges(edgeList);
 
@@ -147,6 +167,17 @@ public class JsonController {
 		}
 
 		return network;
+	}
+	
+	private boolean existsInList(final List<String> list, final String nameInList) {
+		boolean exists = false;
+		for (String val : list) {
+			if (val.equals(nameInList)) {
+				exists = true;
+				break;
+			}
+		}
+		return exists;
 	}
 
 	public static Connection getOracleConnection(String url, String username, String password) throws Exception {
