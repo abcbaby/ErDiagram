@@ -2,17 +2,23 @@
   "nodes" : [ {
     "id" : "DRAGON.ROLES",
     "label" : "ROLES",
-    "title" : "<table border=1><tr><th colspan=4>ROLES</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>ROLE_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>ROLE</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>DESCRIPTION</td><td>VARCHAR2</td><td>150</td><td>YES</td></tr></table>",
+    "title" : "<table border=1><tr><th colspan=4>ROLES</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>ROLE_ID (PK)</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>ROLE</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>DESCRIPTION</td><td>VARCHAR2</td><td>150</td><td>YES</td></tr></table>",
+    "primaryKeyList" : [ "ROLE_ID" ],
+    "foreignKeyList" : [ ],
     "propertyMap" : null
   }, {
     "id" : "DRAGON.USERS",
     "label" : "USERS",
-    "title" : "<table border=1><tr><th colspan=4>USERS</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>USER_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>USERNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>FIRSTNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>LASTNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>MIDDLENAME</td><td>CHAR</td><td>1</td><td>YES</td></tr><tr><td>EMAIL</td><td>VARCHAR2</td><td>150</td><td>YES</td></tr></table>",
+    "title" : "<table border=1><tr><th colspan=4>USERS</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>USER_ID (PK)</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>USERNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>FIRSTNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>LASTNAME</td><td>VARCHAR2</td><td>50</td><td>NO</td></tr><tr><td>MIDDLENAME</td><td>CHAR</td><td>1</td><td>YES</td></tr><tr><td>EMAIL</td><td>VARCHAR2</td><td>150</td><td>YES</td></tr></table>",
+    "primaryKeyList" : [ "USER_ID" ],
+    "foreignKeyList" : [ ],
     "propertyMap" : null
   }, {
     "id" : "DRAGON.USER_ROLES",
     "label" : "USER_ROLES",
-    "title" : "<table border=1><tr><th colspan=4>USER_ROLES</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>USER_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>ROLE_ID</td><td>NUMBER</td><td>10</td><td>NO</td></tr></table>",
+    "title" : "<table border=1><tr><th colspan=4>USER_ROLES</th></tr><tr><th>Column Name</th><th>Type</th><th>Size</th><th>Nullable</th></tr><tr><td>USER_ID (PK) (FK)</td><td>NUMBER</td><td>10</td><td>NO</td></tr><tr><td>ROLE_ID (PK) (FK)</td><td>NUMBER</td><td>10</td><td>NO</td></tr></table>",
+    "primaryKeyList" : [ "ROLE_ID", "USER_ID" ],
+    "foreignKeyList" : [ "ROLE_ID", "USER_ID" ],
     "propertyMap" : null
   } ],
   "edges" : [ {

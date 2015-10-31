@@ -41,7 +41,7 @@ public class JsonController {
 		final String jsonDir = req.getServletContext().getRealPath("/json");
 		final File jsonFile = new File(jsonDir, schema + "_diagram.json");
 
-		Network network;
+		final Network network;
 		if (!dsInfo.isForceRefresh() && jsonFile.exists()) { // if file exists use it
 			network = new ObjectMapper().readValue(FileUtils.readFileToString(jsonFile), Network.class);
 		} else {
@@ -51,7 +51,7 @@ public class JsonController {
 			final Connection conn = getOracleConnection(dsInfo.getUrl(), dsInfo.getUsername(), dsInfo.getPassword());
 			final DatabaseMetaData meta = conn.getMetaData();
 
-			List<String> tableNameList = new ArrayList<>();
+			final List<String> tableNameList = new ArrayList<>();
 			final ResultSet tableResultSet = meta.getTables(conn.getCatalog(), schema, null, null);
 			/*
 			 * Leave this here to troubleshoot if later need help to pull all the names from resultSet
@@ -59,14 +59,14 @@ public class JsonController {
 			 * rsmd.getColumnCount(); i++) { String colName =
 			 * rsmd.getColumnName(i); LOGGER.debug("Column Name: " + colName); }
 			 */
-			Map<String, Node> tableMap = new HashMap<>();
+			final Map<String, Node> tableMap = new HashMap<>();
 			LOGGER.debug("List of tables: ");
 			while (tableResultSet.next()) {
 				final String tableName = tableResultSet.getString("TABLE_NAME");
 				LOGGER.debug("TABLE_CAT: " + tableResultSet.getString("TABLE_CAT") + ", " + "TABLE_SCHEM: " + tableResultSet.getString("TABLE_SCHEM") + ", " + "TABLE_NAME: "
 						+ tableName + ", " + "TABLE_TYPE: " + tableResultSet.getString("TABLE_TYPE") + ", " + "REMARKS: " + tableResultSet.getString("REMARKS"));
 
-				Node node = new Node();
+				final Node node = new Node();
 				final String name = schema + "." + tableName;
 				node.setId(name);
 				node.setLabel(tableName);
@@ -76,7 +76,7 @@ public class JsonController {
 			}
 			tableResultSet.close();
 
-			List<Edge> edgeList = new ArrayList<>();
+			final List<Edge> edgeList = new ArrayList<>();
 
 			LOGGER.debug("List of tables foreign keys: ");
 			for (String tableName : tableNameList) {
@@ -137,7 +137,8 @@ public class JsonController {
 					sbTitle.append(columnName);
 					if (existsInList(node.getPrimaryKeyList(), columnName)) {
 						sbTitle.append(" (PK)");
-					} else if (existsInList(node.getForeignKeyList(), columnName)) {
+					} 
+					if (existsInList(node.getForeignKeyList(), columnName)) {
 						sbTitle.append(" (FK)");
 					}
 					sbTitle.append("</td><td>");
@@ -180,11 +181,11 @@ public class JsonController {
 		return exists;
 	}
 
-	public static Connection getOracleConnection(String url, String username, String password) throws Exception {
-		String driver = "oracle.jdbc.driver.OracleDriver";
+	public static Connection getOracleConnection(final String url, final String username, final String password) throws Exception {
+		final String driver = "oracle.jdbc.driver.OracleDriver";
 
 		Class.forName(driver); // load Oracle driver
-		Connection conn = DriverManager.getConnection(url, username, password);
+		final Connection conn = DriverManager.getConnection(url, username, password);
 		LOGGER.debug("Connection string: " + url + " with username: " + username);
 
 		return conn;
