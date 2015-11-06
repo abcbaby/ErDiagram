@@ -75,39 +75,39 @@
 
 	<script type="text/javascript">
 		var DsInputView = Backbone.View.extend({
-			el : $("#dsInfoId"),
-			events : {
-				'click .generateDiagram' : 'generateDiagram'
+			el: $("#dsInfoId"),
+			events: {
+				'click .generateDiagram': 'generateDiagram'
 			},
-			generateDiagram : function() {
+			generateDiagram: function() {
 				var postData = {
-					"url" : $("#url").val(),
-					"username" : $("#username").val(),
-					"password" : $("#password").val(),
-					"schema" : $("#schema").val(),
-					"forceRefresh" : $(
+					"url": $("#url").val(),
+					"username": $("#username").val(),
+					"password": $("#password").val(),
+					"schema": $("#schema").val(),
+					"forceRefresh": $(
 							"input:radio[name=forceRefresh]:checked")
 							.val()
 				};
 
 				var jsonData;
 				$.ajax({
-					async : false,
-					type : "POST",
-					url : "/rest/erDiagram",
-					contentType : "application/json; charset=utf-8",
-					dataType : "json",
-					data : JSON.stringify(postData),
-					beforeSend : function() {
+					async: false,
+					type: "POST",
+					url: "/rest/erDiagram",
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					data: JSON.stringify(postData),
+					beforeSend: function() {
 					},
-					error : function(e) {
+					error: function(e) {
 						$.notify({
 							message: "Error trying to retrieve data."
 						},{
 							type: 'danger'
 						});
 					},
-					success : function(json) {
+					success: function(json) {
 						jsonData = json;
 					},
 				});
@@ -121,11 +121,11 @@
 		});
 
 		var ToolbarView = Backbone.View.extend({
-			el : $("#toolbarFormId"),
-			events : {
-				'click .physicsOn' : 'physicsToggle'
+			el: $("#toolbarFormId"),
+			events: {
+				'click .physicsOn': 'physicsToggle'
 			},
-			physicsToggle : function() {
+			physicsToggle: function() {
 				physicsOn = JSON.parse($("input:radio[name=physicsOn]:checked").val());
 				network.setOptions({
 					physics: {
@@ -140,36 +140,37 @@
 			edges = new vis.DataSet(jsonData.edges);
 
 			var data = {
-				nodes : nodes,
-				edges : edges
+				nodes: nodes,
+				edges: edges
 			};
 			var options = {
-				width : (window.innerWidth - 25) + "px",
-				height : (window.innerHeight -50) + "px",
-				layout : {
-					randomSeed : 8
+				width: (window.innerWidth - 25) + "px",
+				height: (window.innerHeight -50) + "px",
+				layout: {
+					randomSeed: 8,
+					improvedLayout: false // temporary disable since there a bug w/ vis.js v4.9
 				},
-				interaction : {
-					multiselect : true,
-					navigationButtons : true
+				interaction: {
+					multiselect: true,
+					navigationButtons: true
 				},
-				nodes : {
-					borderWidthSelected : 2,
-					shape : 'box'
+				nodes: {
+					borderWidthSelected: 2,
+					shape: 'box'
 				},
-				edges : {
-					arrows : {
-						to : {
-							scaleFactor : 0.5
+				edges: {
+					arrows: {
+						to: {
+							scaleFactor: 0.5
 						}
 					},
-					font : {
-						align : "middle"
+					font: {
+						align: "middle"
 					},
-					smooth : {
-						type : 'continuous'
+					smooth: {
+						type: 'continuous'
 					},
-					length : 400
+					length: 400
 				}
 			};
 			network = new vis.Network(container[0], data, options);
