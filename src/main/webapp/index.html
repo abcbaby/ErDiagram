@@ -57,11 +57,18 @@
 	<div id="network"></div>
 	<form id="toolbarFormId" role="form">
 		<div class="form-group">
-			<label>Physics On:</label> <label
-				class="radio-inline physicsOn"><input type="radio"
-				name="physicsOn" value="true" checked>True</label> <label
-				class="radio-inline physicsOn"><input type="radio"
-				name="physicsOn" value="false">False</label>
+			<div class="row">
+				<div class="col-md-6">
+					<button type="button" class="btn btn-primary findNodes">Find</button>
+				</div>
+				<div class="col-md-6 text-right">
+					<label>Physics On:</label> <label
+						class="radio-inline physicsOn"><input type="radio"
+						name="physicsOn" value="true" checked>True</label> <label
+						class="radio-inline physicsOn"><input type="radio"
+						name="physicsOn" value="false">False</label>
+				</div>
+			</div>
 		</div>
 	</form>
 
@@ -69,6 +76,7 @@
 	<script type="text/javascript" src="/js/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/js/lodash/lodash.js"></script>
 	<script type="text/javascript" src="/js/bootstrap-notify/bootstrap-notify.min.js"></script>
+	<script type="text/javascript" src="/js/bootbox/4.4.0/bootbox.min.js"></script>
 	<script type="text/javascript" src="/js/backbone/backbone-min.js"></script>
 	<script type="text/javascript" src="/js/vis/vis.js"></script>
 	<script type="text/javascript" src="/js/vis-highlight.js"></script>
@@ -123,7 +131,31 @@
 		var ToolbarView = Backbone.View.extend({
 			el: $("#toolbarFormId"),
 			events: {
+				'click .findNodes': 'findNodes',
 				'click .physicsOn': 'physicsToggle'
+			},
+			findNodes: function() {
+				bootbox.prompt({
+					title : "Find all nodes containing:",
+					callback : function(result) {
+						if (result !== null) {
+							var matchedNodeIds = [];
+							var allNodes = nodes.get();
+							_.forEach(allNodes, function(item) {
+								if (item.label.toLowerCase().indexOf(result.toLowerCase()) > -1) {
+									matchedNodeIds.push(item.id);
+								}
+							});
+
+							if (_.isEmpty(matchedNodeIds)) {
+								ALERT.info("No result containing '" + result + "'. Try again.");
+							} else {
+								network.selectNodes(matchedNodeIds);
+								network.focus(matchedNodeIds[0]);
+							}
+						}
+					}
+				});
 			},
 			physicsToggle: function() {
 				physicsOn = JSON.parse($("input:radio[name=physicsOn]:checked").val());
@@ -131,10 +163,10 @@
 					physics: {
 						enabled: physicsOn
 					}
-				});			
+				});
 			}
 		});
-		
+
 		function draw(jsonData) {
 			nodes = new vis.DataSet(jsonData.nodes);
 			edges = new vis.DataSet(jsonData.edges);
@@ -145,7 +177,7 @@
 			};
 			var options = {
 				width: (window.innerWidth - 25) + "px",
-				height: (window.innerHeight -50) + "px",
+				height: (window.innerHeight - 75) + "px",
 				layout: {
 					randomSeed: 8,
 					improvedLayout: false // temporary disable since there a bug w/ vis.js v4.9
@@ -174,30 +206,30 @@
 				}
 			};
 			network = new vis.Network(container[0], data, options);
-			
+
 			canvas = network.canvas.frame.canvas;
-			ctx = canvas.getContext('2d');			
+			ctx = canvas.getContext('2d');
 		}
-		
+
 		function removeSelectedNodes() {
 			var selectedNodeIds = network.getSelectedNodes();
 			nodes.remove(selectedNodeIds);
 			$.notify({
-				message: selectedNodeIds.length + " nodes removed." 
+				message: selectedNodeIds.length + " nodes removed."
 			},{
 				type: 'success'
 			});
 		}
-		
+
 		function registerListeners() {
 			document.body.oncontextmenu = function() {return false;};
 
 			container.on("mousemove", function(e) {
-				if (drag) { 
+				if (drag) {
 					restoreDrawingSurface();
 					rect.w = (e.pageX - this.offsetLeft) - rect.startX;
 					rect.h = (e.pageY - this.offsetTop) - rect.startY ;
-					
+
 					ctx.setLineDash([5]);
 					ctx.strokeStyle = "rgb(0, 102, 0)";
 					ctx.strokeRect(rect.startX, rect.startY, rect.w, rect.h);
@@ -206,10 +238,10 @@
 					ctx.fillRect(rect.startX, rect.startY, rect.w, rect.h);
 				}
 			});
-		    
+
 		    container.on("mousedown", function(e) {
 		    	network.setOptions({ physics: false });
-				if (e.button == 2) { 
+				if (e.button == 2) {
 					selectedNodes = e.ctrlKey ? network.getSelectedNodes() : null;
 					saveDrawingSurface();
 					var that = this;
@@ -218,10 +250,10 @@
 					drag = true;
 					container[0].style.cursor = "crosshair";
 				}
-			}); 
-			
+			});
+
 			container.on("mouseup", function(e) {
-				if (e.button == 2) { 
+				if (e.button == 2) {
 					restoreDrawingSurface();
 					drag = false;
 
@@ -251,7 +283,7 @@
 
 			var dsInputView = new DsInputView();
 			var toolbarView = new ToolbarView();
-			
+
 			registerListeners();
 		});
 	</script>
